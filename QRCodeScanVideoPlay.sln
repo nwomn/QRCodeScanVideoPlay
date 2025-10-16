@@ -1,0 +1,63 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backend", "backend", "{D80947CF-43E0-48E2-A220-1BD9F8000798}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{5A8D68F7-8CFA-46D3-9152-CA06F6C352F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QrVideo.Domain", "backend\Domain\QrVideo.Domain\QrVideo.Domain.csproj", "{9BCF9631-D8FE-453E-994A-ABB2534853CC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Application", "Application", "{9AE98478-DFC6-481B-8354-6843784DA248}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QrVideo.Application", "backend\Application\QrVideo.Application\QrVideo.Application.csproj", "{513E1706-E7F3-4B15-9DF8-549C1E666464}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{9F59BED2-2945-478B-AC05-2FAC5DB0D051}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QrVideo.Infrastructure", "backend\Infrastructure\QrVideo.Infrastructure\QrVideo.Infrastructure.csproj", "{FBA03139-8274-4688-B72A-BBD4C92ADE1F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{6D87772B-AD30-4AD3-A4BE-B5CBB7B4E2BA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api", "Api", "{A28C9D58-17CE-4D9F-97E4-19341707C46C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QrVideo.Api", "backend\Presentation\Api\QrVideo.Api\QrVideo.Api.csproj", "{10693F0E-F19F-4864-9DC9-0C275B8AFA33}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9BCF9631-D8FE-453E-994A-ABB2534853CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BCF9631-D8FE-453E-994A-ABB2534853CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BCF9631-D8FE-453E-994A-ABB2534853CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BCF9631-D8FE-453E-994A-ABB2534853CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{513E1706-E7F3-4B15-9DF8-549C1E666464}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{513E1706-E7F3-4B15-9DF8-549C1E666464}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{513E1706-E7F3-4B15-9DF8-549C1E666464}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{513E1706-E7F3-4B15-9DF8-549C1E666464}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBA03139-8274-4688-B72A-BBD4C92ADE1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBA03139-8274-4688-B72A-BBD4C92ADE1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBA03139-8274-4688-B72A-BBD4C92ADE1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBA03139-8274-4688-B72A-BBD4C92ADE1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10693F0E-F19F-4864-9DC9-0C275B8AFA33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10693F0E-F19F-4864-9DC9-0C275B8AFA33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10693F0E-F19F-4864-9DC9-0C275B8AFA33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10693F0E-F19F-4864-9DC9-0C275B8AFA33}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5A8D68F7-8CFA-46D3-9152-CA06F6C352F9} = {D80947CF-43E0-48E2-A220-1BD9F8000798}
+		{9BCF9631-D8FE-453E-994A-ABB2534853CC} = {5A8D68F7-8CFA-46D3-9152-CA06F6C352F9}
+		{9AE98478-DFC6-481B-8354-6843784DA248} = {D80947CF-43E0-48E2-A220-1BD9F8000798}
+		{513E1706-E7F3-4B15-9DF8-549C1E666464} = {9AE98478-DFC6-481B-8354-6843784DA248}
+		{9F59BED2-2945-478B-AC05-2FAC5DB0D051} = {D80947CF-43E0-48E2-A220-1BD9F8000798}
+		{FBA03139-8274-4688-B72A-BBD4C92ADE1F} = {9F59BED2-2945-478B-AC05-2FAC5DB0D051}
+		{6D87772B-AD30-4AD3-A4BE-B5CBB7B4E2BA} = {D80947CF-43E0-48E2-A220-1BD9F8000798}
+		{A28C9D58-17CE-4D9F-97E4-19341707C46C} = {6D87772B-AD30-4AD3-A4BE-B5CBB7B4E2BA}
+		{10693F0E-F19F-4864-9DC9-0C275B8AFA33} = {A28C9D58-17CE-4D9F-97E4-19341707C46C}
+	EndGlobalSection
+EndGlobal

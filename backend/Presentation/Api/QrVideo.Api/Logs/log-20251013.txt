@@ -1,0 +1,2 @@
+2025-10-13 17:48:10.417 +08:00 [INF] Default admin user created with username admin
+2025-10-13 17:48:10.495 +08:00 [WRN] No XML encryptor configured. Key {1353f758-28e8-47d1-abab-0bcda9d136da} may be persisted to storage in unencrypted form.
