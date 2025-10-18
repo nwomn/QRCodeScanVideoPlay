@@ -13,6 +13,7 @@ export const PlayPage = () => {
   const [data, setData] = useState<ScanResult | null>(state ?? null);
   const [loading, setLoading] = useState(!state);
   const [error, setError] = useState<string>();
+  const [videoError, setVideoError] = useState<{ code?: number; message?: string }>();
 
   useEffect(() => {
     if (!state && code) {
@@ -84,9 +85,25 @@ export const PlayPage = () => {
         onPlay={() => {
           void recordPlayLog(video.id, { completed: false });
         }}
+        onError={(err) => {
+          setVideoError(err);
+          console.error('Video playback error:', err);
+        }}
       />
+      {videoError && (
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
+          <p className="font-medium">视频播放遇到问题</p>
+          <p className="mt-1">
+            {videoError.message || `错误代码: ${videoError.code}`}
+            {videoError.code && ` (${videoError.code})`}
+          </p>
+          <p className="mt-2 text-xs">
+            建议：检查网络连接，或尝试刷新页面。如问题持续，请联系现场工作人员。
+          </p>
+        </div>
+      )}
       <div className="rounded-lg border bg-white p-4 text-sm text-gray-600">
-        若播放异常，请刷新页面或联系现场工作人员。
+        若播放异常，请尝试刷新页面或联系现场工作人员。
       </div>
     </div>
   );

@@ -132,7 +132,40 @@ app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(staticRoot),
     RequestPath = string.Empty,
-    ServeUnknownFileTypes = true
+    ServeUnknownFileTypes = false, // Changed to false for security and proper MIME types
+    OnPrepareResponse = ctx =>
+    {
+        var path = ctx.File.PhysicalPath?.ToLower() ?? "";
+
+        // Set proper MIME types for video files
+        if (path.EndsWith(".mp4"))
+        {
+            ctx.Context.Response.ContentType = "video/mp4";
+        }
+        else if (path.EndsWith(".webm"))
+        {
+            ctx.Context.Response.ContentType = "video/webm";
+        }
+        else if (path.EndsWith(".ogv"))
+        {
+            ctx.Context.Response.ContentType = "video/ogg";
+        }
+
+        // Enable Range request support for video files
+        if (path.Contains("/videos/"))
+        {
+            ctx.Context.Response.Headers.AcceptRanges = "bytes";
+
+            // Set cache headers for videos
+            ctx.Context.Response.Headers.CacheControl = "public, max-age=604800"; // 7 days
+        }
+
+        // Cache headers for cover images
+        if (path.Contains("/covers/"))
+        {
+            ctx.Context.Response.Headers.CacheControl = "public, max-age=2592000"; // 30 days
+        }
+    }
 });
 
 app.UseAuthentication();
