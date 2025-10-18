@@ -6,6 +6,7 @@ import { authStore } from '../store/auth';
 export const api = axios.create({
   baseURL: env.apiBaseUrl,
   withCredentials: false,
+  timeout: 1800000, // 30 minutes timeout for large file uploads (2GB max)
 });
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {

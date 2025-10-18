@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Button, Form, Input, Modal, Space, Switch, Table, Tag, Upload, message } from 'antd';
+import { useMemo, useState, useEffect } from 'react';
+import { Button, Form, Input, Modal, Popconfirm, Progress, Space, Switch, Table, Tag, Upload, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { UploadOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -18,11 +18,16 @@ interface VideoTableRecord extends VideoDto {
 }
 
 export const VideosPage = () => {
+  useEffect(() => {
+    document.title = '视频管理 - QR视频播放系统';
+  }, []);
+
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -37,11 +42,13 @@ export const VideosPage = () => {
     onSuccess: () => {
       message.success('上传成功');
       setIsModalOpen(false);
+      setUploadProgress(0);
       form.resetFields();
       setSelectedFile(null);
       void queryClient.invalidateQueries({ queryKey: ['videos'] });
     },
     onError: (err: unknown) => {
+      setUploadProgress(0);
       message.error(err instanceof Error ? err.message : '上传失败');
     },
   });
@@ -60,6 +67,9 @@ export const VideosPage = () => {
     onSuccess: () => {
       message.success('删除成功');
       void queryClient.invalidateQueries({ queryKey: ['videos'] });
+    },
+    onError: (error: unknown) => {
+      message.error(error instanceof Error ? error.message : '删除失败');
     },
   });
 
@@ -111,21 +121,19 @@ export const VideosPage = () => {
         key: 'actions',
         render: (_, record) => (
           <Space size="middle">
-            <a href={record.filePath} target="_blank" rel="noreferrer" className="text-primary">
+            <Button type="link" href={record.filePath} target="_blank" rel="noreferrer">
               预览
-            </a>
-            <a
-              className="text-red-500"
-              onClick={() => {
-                Modal.confirm({
-                  title: '确认删除此视频？',
-                  centered: true,
-                  onOk: () => deleteMutation.mutate(record.id),
-                });
-              }}
+            </Button>
+            <Popconfirm
+              title="确认删除此视频？"
+              onConfirm={() => deleteMutation.mutate(record.id)}
+              okText="删除"
+              cancelText="取消"
             >
-              删除
-            </a>
+              <Button type="link" danger>
+                删除
+              </Button>
+            </Popconfirm>
           </Space>
         ),
       },
@@ -135,17 +143,29 @@ export const VideosPage = () => {
 
   const dataSource = (data?.items ?? []).map((item) => ({ ...item, key: item.id }));
 
-  const handleUpload = () => {
-    form
-      .validateFields()
-      .then((values: { title: string; description?: string }) => {
-        if (!selectedFile) {
-          message.warning('请先选择视频文件');
-          return;
-        }
-        createMutation.mutate({ title: values.title, description: values.description, file: selectedFile });
-      })
-      .catch(() => undefined);
+  const handleUpload = async () => {
+    try {
+      const values = await form.validateFields();
+      if (!selectedFile) {
+        message.warning('请先选择视频文件');
+        return;
+      }
+
+      setUploadProgress(0);
+      await createMutation.mutateAsync({
+        title: values.title,
+        description: values.description,
+        file: selectedFile,
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percent);
+          }
+        },
+      });
+    } catch {
+      // Error handled by mutation
+    }
   };
 
   return (
@@ -184,19 +204,24 @@ export const VideosPage = () => {
         title="上传视频"
         open={isModalOpen}
         onCancel={() => {
-          setIsModalOpen(false);
-          form.resetFields();
-          setSelectedFile(null);
+          if (!createMutation.isPending) {
+            setIsModalOpen(false);
+            setUploadProgress(0);
+            form.resetFields();
+            setSelectedFile(null);
+          }
         }}
         onOk={handleUpload}
         confirmLoading={createMutation.isPending}
+        maskClosable={!createMutation.isPending}
+        closable={!createMutation.isPending}
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="title" label="视频标题" rules={[{ required: true, message: '请输入视频标题' }]}> 
-            <Input placeholder="请输入视频标题" />
+          <Form.Item name="title" label="视频标题" rules={[{ required: true, message: '请输入视频标题' }]}>
+            <Input placeholder="请输入视频标题" disabled={createMutation.isPending} />
           </Form.Item>
           <Form.Item name="description" label="视频描述">
-            <Input.TextArea rows={3} placeholder="请输入描述（可选）" />
+            <Input.TextArea rows={3} placeholder="请输入描述（可选）" disabled={createMutation.isPending} />
           </Form.Item>
           <Form.Item label="视频文件" required>
             <Upload
@@ -206,15 +231,24 @@ export const VideosPage = () => {
               }}
               maxCount={1}
               accept="video/mp4"
+              disabled={createMutation.isPending}
             >
-              <Button icon={<UploadOutlined />}>选择 MP4 文件</Button>
+              <Button icon={<UploadOutlined />} disabled={createMutation.isPending}>
+                选择 MP4 文件
+              </Button>
             </Upload>
             {selectedFile && (
               <Tag color="blue" className="mt-2">
-                {selectedFile.name}
+                {selectedFile.name} ({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
               </Tag>
             )}
           </Form.Item>
+          {createMutation.isPending && uploadProgress > 0 && (
+            <Form.Item>
+              <Progress percent={uploadProgress} status="active" />
+              <p className="text-sm text-gray-500 mt-2">正在上传，请勿关闭页面...</p>
+            </Form.Item>
+          )}
         </Form>
       </Modal>
     </div>

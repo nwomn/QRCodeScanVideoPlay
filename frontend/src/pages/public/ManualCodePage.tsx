@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { resolveQrCode } from '../../services/public';
 
 export const ManualCodePage = () => {
+  useEffect(() => {
+    document.title = '手动输入 - QR视频播放系统';
+  }, []);
+
   const [code, setCode] = useState('');
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);

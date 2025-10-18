@@ -4,6 +4,10 @@ import { CameraScanner } from '../../components/scanner/CameraScanner';
 import { resolveQrCode } from '../../services/public';
 
 export const ScanPage = () => {
+  useEffect(() => {
+    document.title = '扫码播放 - QR视频播放系统';
+  }, []);
+
   const navigate = useNavigate();
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);

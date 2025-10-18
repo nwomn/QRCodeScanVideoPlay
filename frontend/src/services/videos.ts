@@ -30,13 +30,21 @@ export const getVideoById = async (id: string) => {
   return response.data;
 };
 
-export const createVideo = async (payload: { title: string; description?: string; file: File }) => {
+export const createVideo = async (payload: {
+  title: string;
+  description?: string;
+  file: File;
+  onUploadProgress?: (progressEvent: { loaded: number; total?: number }) => void;
+}) => {
   const formData = new FormData();
   formData.append('Title', payload.title);
-  formData.append('Description', payload.description ?? '');
+  if (payload.description) {
+    formData.append('Description', payload.description);
+  }
   formData.append('File', payload.file);
   const response = await api.post<VideoDto>('/videos', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: payload.onUploadProgress,
   });
   return response.data;
 };

@@ -24,6 +24,14 @@ export const PlayPage = () => {
     }
   }, [state, code]);
 
+  useEffect(() => {
+    if (data?.video?.title) {
+      document.title = `${data.video.title} - QR视频播放系统`;
+    } else {
+      document.title = '视频播放 - QR视频播放系统';
+    }
+  }, [data]);
+
   if (loading) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-2">

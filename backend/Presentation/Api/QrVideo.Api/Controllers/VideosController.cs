@@ -35,7 +35,7 @@ public class VideosController(IVideoService videoService) : ControllerBase
     }
 
     [HttpPost]
-    [RequestSizeLimit(536_870_912)] // 512 MB limit for safety
+    [RequestSizeLimit(2_147_483_648)] // 2 GB limit for safety
     public async Task<ActionResult<VideoDto>> Create([FromForm] CreateVideoForm form, CancellationToken cancellationToken)
     {
         if (form.File is null)

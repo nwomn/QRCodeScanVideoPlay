@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Button, Form, Input, Modal, Select, Space, Switch, Table, Tag, message } from 'antd';
+import { useState, useEffect } from 'react';
+import { Button, Form, Input, Modal, Popconfirm, Select, Space, Switch, Table, Tag, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -20,6 +20,10 @@ interface QrCodeRecord extends QrCodeDto {
 }
 
 export const QrCodesPage = () => {
+  useEffect(() => {
+    document.title = '二维码管理 - QR视频播放系统';
+  }, []);
+
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [videoFilter, setVideoFilter] = useState<string>();
@@ -65,6 +69,9 @@ export const QrCodesPage = () => {
     onSuccess: () => {
       message.success('删除成功');
       void queryClient.invalidateQueries({ queryKey: ['qrcodes'] });
+    },
+    onError: (error: unknown) => {
+      message.error(error instanceof Error ? error.message : '删除失败');
     },
   });
 
@@ -118,18 +125,19 @@ export const QrCodesPage = () => {
       key: 'actions',
       render: (_, record) => (
         <Space size="middle">
-          <a onClick={() => handleDownload(record.id, record.codeValue)}>下载二维码</a>
-          <a
-            className="text-red-500"
-            onClick={() =>
-              Modal.confirm({
-                title: '确认删除该二维码？',
-                onOk: () => deleteMutation.mutate(record.id),
-              })
-            }
+          <Button type="link" onClick={() => handleDownload(record.id, record.codeValue)}>
+            下载二维码
+          </Button>
+          <Popconfirm
+            title="确认删除该二维码？"
+            onConfirm={() => deleteMutation.mutate(record.id)}
+            okText="删除"
+            cancelText="取消"
           >
-            删除
-          </a>
+            <Button type="link" danger>
+              删除
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },

@@ -1,10 +1,15 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Card, Form, Input, Typography, message } from 'antd';
+import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { login } from '../../services/auth';
 import { useAuthStore } from '../../store/auth';
 
 export const LoginPage = () => {
+  useEffect(() => {
+    document.title = '管理员登录 - QR视频播放系统';
+  }, []);
+
   const navigate = useNavigate();
   const location = useLocation();
   const loginStore = useAuthStore((state) => state.login);

@@ -62,13 +62,23 @@ public class VideoService(
         var video = await _dbContext.Videos.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
                     ?? throw new KeyNotFoundException("Video not found");
 
+        // 先删除物理文件
+        try
+        {
+            await _storageService.DeleteFileAsync(video.FilePath, cancellationToken);
+            if (!string.IsNullOrWhiteSpace(video.CoverPath))
+            {
+                await _storageService.DeleteFileAsync(video.CoverPath, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to delete file for video {Id}, continuing with database deletion", id);
+        }
+
+        // 再删除数据库记录
         _dbContext.Videos.Remove(video);
         await _dbContext.SaveChangesAsync(cancellationToken);
-        await _storageService.DeleteFileAsync(video.FilePath, cancellationToken);
-        if (!string.IsNullOrWhiteSpace(video.CoverPath))
-        {
-            await _storageService.DeleteFileAsync(video.CoverPath, cancellationToken);
-        }
 
         _logger.LogInformation("Video {Id} deleted", id);
     }

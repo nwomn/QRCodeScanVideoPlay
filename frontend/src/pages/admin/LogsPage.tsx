@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -7,6 +7,10 @@ import { fetchPlayLogs, fetchScanLogs, type PlayLogDto, type ScanLogDto } from '
 import type { PagedResult } from '../../services/videos';
 
 export const LogsPage = () => {
+  useEffect(() => {
+    document.title = '统计日志 - QR视频播放系统';
+  }, []);
+
   const [scanPage, setScanPage] = useState(1);
   const [playPage, setPlayPage] = useState(1);
   const pageSize = 20;

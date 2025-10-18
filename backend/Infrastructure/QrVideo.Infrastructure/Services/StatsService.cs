@@ -11,13 +11,11 @@ public class StatsService(AppDbContext dbContext) : IStatsService
 
     public async Task<DashboardSummaryDto> GetDashboardSummaryAsync(CancellationToken cancellationToken = default)
     {
-        var videoCountTask = _dbContext.Videos.CountAsync(cancellationToken);
-        var qrCodeCountTask = _dbContext.QrCodes.CountAsync(cancellationToken);
-        var scanCountTask = _dbContext.ScanLogs.LongCountAsync(cancellationToken);
-        var playCountTask = _dbContext.PlayLogs.LongCountAsync(cancellationToken);
+        var videoCount = await _dbContext.Videos.CountAsync(cancellationToken);
+        var qrCodeCount = await _dbContext.QrCodes.CountAsync(cancellationToken);
+        var scanCount = await _dbContext.ScanLogs.LongCountAsync(cancellationToken);
+        var playCount = await _dbContext.PlayLogs.LongCountAsync(cancellationToken);
 
-        await Task.WhenAll(videoCountTask, qrCodeCountTask, scanCountTask, playCountTask);
-
-        return new DashboardSummaryDto(videoCountTask.Result, qrCodeCountTask.Result, scanCountTask.Result, playCountTask.Result);
+        return new DashboardSummaryDto(videoCount, qrCodeCount, scanCount, playCount);
     }
 }
