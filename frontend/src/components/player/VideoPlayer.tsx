@@ -213,12 +213,6 @@ export const VideoPlayer = ({ src, poster, autoplay = true, onPlay, onEnded, onE
         </div>
       )}
 
-      {/* Mobile data usage hint */}
-      {isMobile && !isLoading && !hasError && (
-        <div className="mt-2 rounded-lg bg-blue-50 p-3 text-xs text-blue-700">
-          💡 提示：您正在使用移动网络，播放可能消耗流量。建议在 WiFi 环境下观看。
-        </div>
-      )}
     </div>
   );
 };
