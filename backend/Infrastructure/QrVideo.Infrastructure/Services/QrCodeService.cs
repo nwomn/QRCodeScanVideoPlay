@@ -51,11 +51,23 @@ public class QrCodeService(
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
             ?? throw new KeyNotFoundException("QR code not found");
 
+        // 如果需要更新视频绑定，先验证新视频是否存在
+        if (request.VideoId.HasValue && request.VideoId.Value != qrCode.VideoId)
+        {
+            var videoExists = await _dbContext.Videos.AnyAsync(x => x.Id == request.VideoId.Value, cancellationToken);
+            if (!videoExists)
+            {
+                throw new KeyNotFoundException("Video not found");
+            }
+            qrCode.VideoId = request.VideoId.Value;
+        }
+
         qrCode.IsActive = request.IsActive;
         qrCode.Description = request.Description;
         qrCode.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync(cancellationToken);
+        await _dbContext.Entry(qrCode).Reference(x => x.Video).LoadAsync(cancellationToken);
         _logger.LogInformation("QR code {Id} updated", qrCode.Id);
 
         return qrCode.ToDto();

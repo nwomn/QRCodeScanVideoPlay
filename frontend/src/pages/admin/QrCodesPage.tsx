@@ -28,6 +28,8 @@ export const QrCodesPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [videoFilter, setVideoFilter] = useState<string>();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<QrCodeRecord | null>(null);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -46,8 +48,7 @@ export const QrCodesPage = () => {
     mutationFn: createQrCode,
     onSuccess: () => {
       message.success('创建成功');
-      setIsModalOpen(false);
-      form.resetFields();
+      handleModalClose();
       void queryClient.invalidateQueries({ queryKey: ['qrcodes'] });
     },
     onError: (error: unknown) => {
@@ -56,7 +57,7 @@ export const QrCodesPage = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: { isActive: boolean; description?: string } }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: { videoId?: string; isActive: boolean; description?: string } }) =>
       updateQrCode(id, payload),
     onSuccess: () => {
       message.success('更新成功');
@@ -87,6 +88,44 @@ export const QrCodesPage = () => {
     } catch (error) {
       message.error(error instanceof Error ? error.message : '下载失败');
     }
+  };
+
+  const handleEdit = (record: QrCodeRecord) => {
+    setIsEditMode(true);
+    setEditingRecord(record);
+    form.setFieldsValue({
+      videoId: record.videoId,
+      description: record.description,
+      isActive: record.isActive,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setIsEditMode(false);
+    setEditingRecord(null);
+    form.resetFields();
+  };
+
+  const handleModalOk = () => {
+    form
+      .validateFields()
+      .then((values: { videoId: string; description?: string; isActive: boolean }) => {
+        if (isEditMode && editingRecord) {
+          updateMutation.mutate(
+            { id: editingRecord.id, payload: values },
+            {
+              onSuccess: () => {
+                handleModalClose();
+              },
+            }
+          );
+        } else {
+          createMutation.mutate(values);
+        }
+      })
+      .catch(() => undefined);
   };
 
   const columns: ColumnsType<QrCodeRecord> = [
@@ -125,6 +164,9 @@ export const QrCodesPage = () => {
       key: 'actions',
       render: (_, record) => (
         <Space size="middle">
+          <Button type="link" onClick={() => handleEdit(record)}>
+            编辑
+          </Button>
           <Button type="link" onClick={() => handleDownload(record.id, record.codeValue)}>
             下载二维码
           </Button>
@@ -181,24 +223,14 @@ export const QrCodesPage = () => {
       />
 
       <Modal
-        title="新建二维码"
+        title={isEditMode ? '编辑二维码' : '新建二维码'}
         open={isModalOpen}
-        onCancel={() => {
-          setIsModalOpen(false);
-          form.resetFields();
-        }}
-        onOk={() => {
-          form
-            .validateFields()
-            .then((values: { videoId: string; description?: string; isActive: boolean }) => {
-              createMutation.mutate(values);
-            })
-            .catch(() => undefined);
-        }}
-        confirmLoading={createMutation.isPending}
+        onCancel={handleModalClose}
+        onOk={handleModalOk}
+        confirmLoading={createMutation.isPending || updateMutation.isPending}
       >
         <Form form={form} layout="vertical" initialValues={{ isActive: true }}>
-          <Form.Item name="videoId" label="关联视频" rules={[{ required: true, message: '请选择视频' }]}> 
+          <Form.Item name="videoId" label="关联视频" rules={[{ required: true, message: '请选择视频' }]}>
             <Select
               placeholder="请选择视频"
               options={videoOptions?.map((video) => ({ label: video.title, value: video.id }))}
@@ -210,7 +242,7 @@ export const QrCodesPage = () => {
             <Input.TextArea rows={3} placeholder="可填写放置位置等信息" />
           </Form.Item>
           <Form.Item name="isActive" label="是否启用" valuePropName="checked">
-            <Switch defaultChecked />
+            <Switch />
           </Form.Item>
         </Form>
       </Modal>

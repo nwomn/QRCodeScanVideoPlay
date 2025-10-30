@@ -21,7 +21,7 @@ export const createQrCode = async (payload: { videoId: string; description?: str
   return response.data;
 };
 
-export const updateQrCode = async (id: string, payload: { isActive: boolean; description?: string }) => {
+export const updateQrCode = async (id: string, payload: { videoId?: string; isActive: boolean; description?: string }) => {
   const response = await api.put<QrCodeDto>(`/qrcodes/${id}`, payload);
   return response.data;
 };
