@@ -12,4 +12,13 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    host: true,
+    allowedHosts: [
+      'mzfmedia.cn',
+      'localhost',
+      '127.0.0.1',
+      '8.153.37.167',
+    ],
+  },
 })
