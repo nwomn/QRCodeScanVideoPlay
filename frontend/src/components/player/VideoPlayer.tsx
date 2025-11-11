@@ -53,11 +53,11 @@ export const VideoPlayer = ({ src, poster, autoplay = true, onPlay, onEnded, onE
       responsive: true,
       html5: {
         vhs: {
-          overrideNative: true,
+          overrideNative: !isMobile, // Use native playback on iOS/mobile for better compatibility
         },
-        nativeVideoTracks: false,
-        nativeAudioTracks: false,
-        nativeTextTracks: false,
+        nativeVideoTracks: isMobile, // Use native on mobile
+        nativeAudioTracks: isMobile,
+        nativeTextTracks: isMobile,
       },
       playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2],
     });
@@ -159,7 +159,14 @@ export const VideoPlayer = ({ src, poster, autoplay = true, onPlay, onEnded, onE
   return (
     <div className="relative w-full">
       <div data-vjs-player className="w-full">
-        <video ref={videoNode} className="video-js vjs-big-play-centered w-full h-full" playsInline />
+        <video
+          ref={videoNode}
+          className="video-js vjs-big-play-centered w-full h-full"
+          playsInline
+          webkit-playsinline="true"
+          x5-playsinline="true"
+          preload="metadata"
+        />
       </div>
 
       {/* Loading indicator */}
