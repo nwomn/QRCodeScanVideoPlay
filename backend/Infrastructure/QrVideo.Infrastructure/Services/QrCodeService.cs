@@ -1,6 +1,8 @@
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using QrVideo.Application.Common;
 using QrVideo.Application.Dtos.QrCodes;
 using QrVideo.Application.Extensions;
@@ -14,12 +16,14 @@ public class QrCodeService(
     AppDbContext dbContext,
     IQrCodeGenerator qrCodeGenerator,
     IStorageService storageService,
+    IOptions<StorageSettings> storageOptions,
     ILogger<QrCodeService> logger
 ) : IQrCodeService
 {
     private readonly AppDbContext _dbContext = dbContext;
     private readonly IQrCodeGenerator _qrCodeGenerator = qrCodeGenerator;
     private readonly IStorageService _storageService = storageService;
+    private readonly StorageSettings _storageSettings = storageOptions.Value;
     private readonly ILogger<QrCodeService> _logger = logger;
 
     public async Task<QrCodeDto> CreateAsync(CreateQrCodeRequest request, CancellationToken cancellationToken = default)
@@ -116,7 +120,13 @@ public class QrCodeService(
         var qrCode = await _dbContext.QrCodes.FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
             ?? throw new KeyNotFoundException("QR code not found");
 
-        return await _qrCodeGenerator.GenerateAsync(qrCode.CodeValue, cancellationToken);
+        // Generate QR code with full URL if BaseUrl is configured, otherwise use code value only
+        var qrContent = string.IsNullOrWhiteSpace(_storageSettings.BaseUrl)
+            ? qrCode.CodeValue
+            : $"{_storageSettings.BaseUrl.TrimEnd('/')}/play/{qrCode.CodeValue}";
+
+        _logger.LogInformation("Generating QR code image for ID {Id} with content: {Content}", id, qrContent);
+        return await _qrCodeGenerator.GenerateAsync(qrContent, cancellationToken);
     }
 
     public async Task<ScanResultDto?> ResolveByCodeAsync(string codeValue, CancellationToken cancellationToken = default)
@@ -127,6 +137,15 @@ public class QrCodeService(
         }
 
         var normalized = codeValue.Trim();
+
+        // Extract code from URL if the input is a full URL
+        // Support formats like: https://mzfmedia.cn/play/abc123def456 or just abc123def456
+        var codeMatch = Regex.Match(normalized, @"/play/([^/?#]+)", RegexOptions.IgnoreCase);
+        if (codeMatch.Success)
+        {
+            normalized = codeMatch.Groups[1].Value;
+            _logger.LogInformation("Extracted code '{Code}' from URL '{Url}'", normalized, codeValue);
+        }
 
         var entity = await _dbContext.QrCodes
             .Include(x => x.Video)

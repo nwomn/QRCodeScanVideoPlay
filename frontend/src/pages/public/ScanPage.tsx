@@ -35,7 +35,16 @@ export const ScanPage = () => {
       setIsLoading(true);
       setError(undefined);
       try {
-        const result = await resolveQrCode(text);
+        // Extract code from URL if scanned content is a full URL
+        // Support formats like: https://mzfmedia.cn/play/abc123def456 or just abc123def456
+        let codeValue = text.trim();
+        const urlMatch = codeValue.match(/\/play\/([^/?#]+)/i);
+        if (urlMatch) {
+          codeValue = urlMatch[1];
+          console.log('Extracted code from URL:', codeValue);
+        }
+
+        const result = await resolveQrCode(codeValue);
         navigate(`/play/${encodeURIComponent(result.qrCode.codeValue)}`, { state: result });
       } catch (err) {
         setError(err instanceof Error ? err.message : '识别失败，请重试');
