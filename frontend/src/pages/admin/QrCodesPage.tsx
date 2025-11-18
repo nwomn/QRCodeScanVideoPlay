@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button, Form, Input, Modal, Popconfirm, Select, Space, Switch, Table, Tag, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
@@ -27,11 +27,26 @@ export const QrCodesPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [videoFilter, setVideoFilter] = useState<string>();
+  const [videoSearchText, setVideoSearchText] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingRecord, setEditingRecord] = useState<QrCodeRecord | null>(null);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
+
+  // Debounce utility
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const createDebouncedCallback = useCallback((callback: (value: string) => void, delay: number) => {
+    return (value: string) => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      debounceTimerRef.current = setTimeout(() => {
+        callback(value);
+      }, delay);
+    };
+  }, []);
 
   const { data, isLoading } = useQuery<PagedResult<QrCodeDto>>({
     queryKey: ['qrcodes', page, pageSize, videoFilter],
@@ -39,10 +54,19 @@ export const QrCodesPage = () => {
     placeholderData: (previous) => previous,
   });
 
-  const { data: videoOptions } = useQuery<VideoDto[]>({
-    queryKey: ['video-options'],
-    queryFn: fetchVideoOptions,
+  const { data: videoOptionsResult, isLoading: isLoadingVideos } = useQuery<PagedResult<VideoDto>>({
+    queryKey: ['video-options', videoSearchText],
+    queryFn: () => fetchVideoOptions({ search: videoSearchText, pageSize: 50 }),
+    placeholderData: (previous) => previous,
   });
+
+  const videoOptions = videoOptionsResult?.items ?? [];
+
+  const handleVideoSearch = useCallback((value: string) => {
+    setVideoSearchText(value);
+  }, []);
+
+  const debouncedVideoSearch = createDebouncedCallback(handleVideoSearch, 300);
 
   const createMutation = useMutation({
     mutationFn: createQrCode,
@@ -192,7 +216,7 @@ export const QrCodesPage = () => {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Select
           allowClear
-          placeholder="按视频筛选"
+          placeholder="搜索视频名称进行筛选"
           options={videoOptions?.map((video) => ({ label: video.title, value: video.id }))}
           onChange={(value) => {
             setVideoFilter(value);
@@ -200,7 +224,12 @@ export const QrCodesPage = () => {
           }}
           style={{ width: 240 }}
           showSearch
-          optionFilterProp="label"
+          onSearch={debouncedVideoSearch}
+          filterOption={false}
+          virtual={true}
+          listHeight={400}
+          loading={isLoadingVideos}
+          notFoundContent={isLoadingVideos ? '搜索中...' : videoSearchText ? '未找到匹配的视频' : '请输入视频名称搜索'}
         />
         <Button type="primary" onClick={() => setIsModalOpen(true)}>
           新建二维码
@@ -232,10 +261,15 @@ export const QrCodesPage = () => {
         <Form form={form} layout="vertical" initialValues={{ isActive: true }}>
           <Form.Item name="videoId" label="关联视频" rules={[{ required: true, message: '请选择视频' }]}>
             <Select
-              placeholder="请选择视频"
+              placeholder="搜索并选择视频"
               options={videoOptions?.map((video) => ({ label: video.title, value: video.id }))}
               showSearch
-              optionFilterProp="label"
+              onSearch={debouncedVideoSearch}
+              filterOption={false}
+              virtual={true}
+              listHeight={400}
+              loading={isLoadingVideos}
+              notFoundContent={isLoadingVideos ? '搜索中...' : videoSearchText ? '未找到匹配的视频' : '请输入视频名称搜索'}
             />
           </Form.Item>
           <Form.Item name="description" label="备注">

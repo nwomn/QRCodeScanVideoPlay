@@ -37,7 +37,9 @@ export const downloadQrCodeImage = async (id: string) => {
   return response.data;
 };
 
-export const fetchVideoOptions = async () => {
-  const response = await api.get<PagedResult<VideoDto>>('/videos', { params: { page: 1, pageSize: 100 } });
-  return response.data.items;
+export const fetchVideoOptions = async (params?: { search?: string; pageSize?: number }) => {
+  const response = await api.get<PagedResult<VideoDto>>('/videos', {
+    params: { page: 1, pageSize: params?.pageSize || 20, search: params?.search }
+  });
+  return response.data;
 };
