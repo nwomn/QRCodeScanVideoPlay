@@ -1,0 +1,18 @@
+video_id,description,is_active
+# Example CSV file for bulk creating QR codes
+# Replace the GUIDs below with actual video IDs from your system
+#
+# Format:
+#   video_id: Video GUID (required)
+#   description: Description for the QR code (optional)
+#   is_active: true/false (optional, defaults to true)
+#
+# To get video IDs, run:
+#   qrvideo videos list
+#   or
+#   qrvideo videos export --output videos.csv
+#
+# Example entries (replace with real video IDs):
+# 123e4567-e89b-12d3-a456-426614174000,产品A展示二维码,true
+# 987fcdeb-51a2-43c7-b9e0-123456789abc,产品B演示二维码,true
+# 456789ab-cdef-0123-4567-89abcdef0123,教程视频二维码,false
