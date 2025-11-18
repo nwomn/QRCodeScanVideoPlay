@@ -46,10 +46,16 @@ export const AdminLayout = () => {
   } = theme.useToken();
 
   const selectedKeys = useMemo(() => {
-    const match = menuItems?.find((item) =>
-      typeof item?.key === 'string' && location.pathname.startsWith(item.key)
-    );
-    return match?.key ? [match.key as string] : [];
+    // Find the longest matching path to ensure correct menu item is selected
+    let bestMatch: string | null = null;
+    menuItems?.forEach((item) => {
+      if (typeof item?.key === 'string' && location.pathname.startsWith(item.key)) {
+        if (!bestMatch || item.key.length > bestMatch.length) {
+          bestMatch = item.key;
+        }
+      }
+    });
+    return bestMatch ? [bestMatch] : [];
   }, [location.pathname]);
 
   return (
